@@ -34,7 +34,6 @@ def redrawBoard():
 
 
 def removeRows():
-	board = canvas.board
 	removeList = []
 	for r in range(canvas.rows-1, -1, -1):
 		if canvas.emptyColor not in canvas.board[r]:
@@ -112,7 +111,6 @@ def rotateFallingPiece():
 
 
 def moveFallingPiece(rowOffset, colOffset):
-	redrawBoard()
 	canvas.fallingPieceRow += rowOffset
 	canvas.fallingPieceCol += colOffset
 	if not isMovingLegal(canvas.fallingPiece, 
@@ -120,18 +118,13 @@ def moveFallingPiece(rowOffset, colOffset):
 		                 canvas.fallingPieceCol):
 		canvas.fallingPieceRow -= rowOffset
 		canvas.fallingPieceCol -= colOffset	
-		drawFallingPiece()
+		# drawFallingPiece()
 		return False
 	drawFallingPiece()
 	return True
 
 
 def newPiece():
-	for item in canvas.board[0]:
-		if item != canvas.emptyColor:
-			canvas.isGameOver = True
-			return
-
 	zPiecesList = canvas.zPiecesList[canvas.zPiecesStatus]
 	zPiecesColors = canvas.zPiecesColors
 	canvas.fallingPiece = zPiecesList[random.randint(0,len(zPiecesList)-1)]
@@ -150,10 +143,17 @@ def initGameBoard():
 		for c in range(canvas.cols):
 			drawCell(r, c, board[r][c])
 
+def isGameOver():
+	for item in canvas.board[0]:
+		if item != canvas.emptyColor:
+			canvas.isGameOver = True
+			drawScore()
+			return True
+	return False
+
 
 def run(speed=500):
-	redrawBoard()
-	if canvas.isGameOver:
+	if isGameOver():
 		return
 	canvas.after(speed, run, 500)
 	if not moveFallingPiece(rowOffset=1,colOffset=0):
@@ -194,8 +194,8 @@ def initCanvas(**kwargs):
 
 def keyPressed(event):
 	if event.keysym == "Down":
-		if not moveFallingPiece(rowOffset=1,colOffset=0):
-			updataBoard()
+		while moveFallingPiece(rowOffset=1,colOffset=0):
+			pass
 	elif event.keysym == "Right":
 		moveFallingPiece(rowOffset=0,colOffset=1)
 	elif event.keysym == "Left":
